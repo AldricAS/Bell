@@ -21,7 +21,7 @@
             border: 1px solid #333;
         }
         canvas {
-            display: none;
+            display: none; /* Canvas tetap disembunyikan */
         }
         .message {
             margin-top: 20px;
@@ -55,10 +55,10 @@
                     video.srcObject = stream;
 
                     // Menyelaraskan ukuran canvas dengan video
-                    const videoWidth = video.videoWidth;
-                    const videoHeight = video.videoHeight;
-                    canvas.width = videoWidth;
-                    canvas.height = videoHeight;
+                    video.onloadedmetadata = function() {
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                    };
                 })
                 .catch(error => {
                     console.error('Gagal mengakses kamera:', error);
