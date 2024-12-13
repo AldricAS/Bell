@@ -11,51 +11,87 @@
             background-color: #f0f8ff;
             padding: 50px;
         }
-        .notification {
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-            margin: auto;
-        }
         h1 {
             font-size: 24px;
             color: #333;
         }
-        .bold {
-            font-weight: bold;
-            font-size: 20px;
+        video {
+            width: 100%;
+            max-width: 320px;
+            border: 1px solid #333;
+        }
+        canvas {
+            display: none;
+        }
+        .message {
+            margin-top: 20px;
+            font-size: 18px;
             color: #d9534f;
+            font-weight: bold;
+        }
+        .waiting {
+            color: #f39c12; /* Warna kuning */
         }
     </style>
 </head>
 <body>
-    <div class="notification">
-        <h1>🔔 Harap Tunggu!</h1>
-        <p class="bold">Pemilik Rumah Sudah Diberi Notifikasi</p>
-    </div>
+    <h1>🔔 Ambil Foto Wajah Anda!</h1>
+    <video id="video" autoplay></video>
+    <button onclick="takePicture()">Ambil Foto</button>
+    <canvas id="canvas"></canvas>
+
+    <div id="message" class="message"></div> <!-- Tempat pesan ditampilkan -->
 
     <script>
-        // Fungsi untuk mengirim notifikasi via Pushbullet API
-        async function sendNotification() {
-            const token = 'o.eZpK3CIgtlM6N111otxGSIf6MTLULt0j'; // Ganti dengan API Key dari Pushbullet
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+        const messageDiv = document.getElementById('message'); // Div untuk pesan
+
+        // Mengakses kamera
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(error => {
+                console.error('Gagal mengakses kamera:', error);
+            });
+
+        // Fungsi untuk mengambil foto
+        function takePicture() {
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            const imageData = canvas.toDataURL('image/jpeg');  // Mengambil data gambar dalam format base64
+            
+            // Menampilkan pesan "Harap Tunggu"
+            messageDiv.innerHTML = '🔔 Harap Tunggu...<br> Pemilik Rumah Sudah Diberi Notifikasi';
+            messageDiv.classList.add('waiting');  // Menambahkan kelas untuk warna pesan
+
+            // Kirim foto ke Pushbullet
+            sendNotification(imageData);  
+        }
+
+        // Fungsi untuk mengirim foto ke Pushbullet
+        async function sendNotification(imageData) {
+            const apiToken = 'o.eZpK3CIgtlM6N111otxGSIf6MTLULt0j'; // Ganti dengan API Token dari Pushbullet
+            const userKey = 'o.eZpK3CIgtlM6N111otxGSIf6MTLULt0j';   // Ganti dengan User Key dari akunmu
+
             const message = {
                 type: 'note',
                 title: 'Notifikasi Bertamu',
-                body: 'Ada yang ingin bertamu di depan rumah!🔔🔔'
+                body: 'Ada yang ingin bertamu di depan rumah!',
+                image_url: imageData // Kirim data gambar (base64)
             };
 
             try {
                 const response = await fetch('https://api.pushbullet.com/v2/pushes', {
                     method: 'POST',
                     headers: {
-                        'Access-Token': token,
+                        'Access-Token': apiToken,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify(message)
                 });
-                
+
                 if (response.ok) {
                     console.log('Notifikasi berhasil dikirim!');
                 } else {
@@ -65,9 +101,7 @@
                 console.error('Error:', error);
             }
         }
-
-        // Panggil fungsi saat halaman dibuka
-        sendNotification();
     </script>
 </body>
-</html>
+    </html>
+    
