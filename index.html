@@ -100,19 +100,24 @@
                 if (data.success) {
                     // Mengirim notifikasi ke Pushbullet setelah mendapatkan URL gambar dari Imgur
                     const imageUrl = data.data.link;
+                    console.log('Gambar berhasil diunggah ke Imgur. URL:', imageUrl);
                     sendNotification(imageUrl);
                 } else {
-                    console.error('Gagal mengunggah gambar ke Imgur');
+                    console.error('Gagal mengunggah gambar ke Imgur', data);
+                    messageDiv.innerHTML = '❌ Gagal mengunggah gambar. Coba lagi.';
+                    messageDiv.style.color = '#d9534f';  // Merah untuk error
                 }
             } catch (error) {
                 console.error('Error mengunggah gambar:', error);
+                messageDiv.innerHTML = '❌ Terjadi kesalahan saat mengunggah gambar.';
+                messageDiv.style.color = '#d9534f';
             }
         }
 
         // Fungsi untuk mengirim foto ke Pushbullet
         async function sendNotification(imageUrl) {
-            const apiToken = 'o.eZpK3CIgtlM6N111otxGSIf6MTLULt0j'; // Ganti dengan API Token dari Pushbullet
-            const userKey = 'o.eZpK3CIgtlM6N111otxGSIf6MTLULt0j';   // Ganti dengan User Key dari akunmu
+            const apiToken = 'o.ypVmz8w5ydJ8hhjFN79tJmSzmQPRt5SQ'; // Ganti dengan API Token dari Pushbullet
+            const userKey = 'o.ypVmz8w5ydJ8hhjFN79tJmSzmQPRt5SQ';   // Ganti dengan User Key dari akunmu
 
             const message = {
                 type: 'note',
@@ -137,7 +142,7 @@
                     console.error('Gagal mengirim notifikasi.');
                 }
             } catch (error) {
-                console.error('Error:', error);
+                console.error('Error mengirim notifikasi:', error);
             }
         }
 
