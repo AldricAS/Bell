@@ -1,154 +1,37 @@
 <!DOCTYPE html>
-<html lang="id">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notifikasi Pemilik Rumah</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f0f8ff;
-            padding: 50px;
-        }
-        h1 {
-            font-size: 24px;
-            color: #333;
-        }
-        video {
-            width: 100%;
-            max-width: 320px;
-            border: 1px solid #333;
-        }
-        canvas {
-            display: none;
-        }
-        .message {
-            margin-top: 20px;
-            font-size: 18px;
-            color: #d9534f;
-            font-weight: bold;
-        }
-        .waiting {
-            color: #f39c12; /* Warna kuning */
-        }
-    </style>
+  <title>Bell Notification</title>
 </head>
-<body>
-    <h1>🔔 Ambil Foto Wajah Anda!</h1>
-    <video id="video" autoplay></video>
-    <button onclick="takePicture()">Ambil Foto</button>
-    <canvas id="canvas"></canvas>
-    <div id="message" class="message"></div> <!-- Tempat pesan ditampilkan -->
+<body style="text-align: center; margin-top: 50px;">
 
-    <script>
-        const video = document.getElementById('video');
-        const canvas = document.getElementById('canvas');
-        const context = canvas.getContext('2d');
-        const messageDiv = document.getElementById('message'); // Div untuk pesan
+  <button onclick="sendNotification()" style="font-size: 24px; padding: 10px 20px;">
+    Bell
+  </button>
 
-        // API Token dan User Key untuk Pushbullet
-        const apiToken = 'o.ypVmz8w5ydJ8hhjFN79tJmSzmQPRt5SQ';  // API Token Pushbullet
-        const userKey = 'o.ypVmz8w5ydJ8hhjFN79tJmSzmQPRt5SQ'; // User Key Pushbullet
-
-        // Mengakses kamera
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                video.srcObject = stream;
-            })
-            .catch(error => {
-                console.error('Gagal mengakses kamera:', error);
-            });
-
-        // Fungsi untuk mengambil foto
-        function takePicture() {
-            // Tentukan ukuran canvas sesuai dengan video
-            canvas.width = video.videoWidth;
-            canvas.height = video.videoHeight;
-
-            context.drawImage(video, 0, 0, canvas.width, canvas.height);
-            const imageData = canvas.toDataURL('image/jpeg');  // Mengambil data gambar dalam format base64
-
-            // Menampilkan pesan "Harap Tunggu"
-            messageDiv.innerHTML = '🔔 Harap Tunggu...<br> Pemilik Rumah Sudah Diberi Notifikasi';
-            messageDiv.classList.add('waiting');  // Menambahkan kelas untuk warna pesan
-
-            // Kirim foto ke Imgur dan Pushbullet
-            uploadToImgur(imageData);
+  <script>
+    function sendNotification() {
+      fetch("https://api.pushbullet.com/v2/pushes", {
+        method: "POST",
+        headers: {
+          'Access-Token': 'o.JP3ikgYdEErdxkLHOsqF8xUCR1VaDd7a',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          type: 'note',
+          title: 'Tamu Datang!',
+          body: 'Seseorang baru saja menekan tombol Bell di websitemu.'
+        })
+      })
+      .then(response => {
+        if (response.ok) {
+          alert("Notifikasi berhasil dikirim ke Pushbullet!");
+        } else {
+          alert("Gagal kirim notifikasi. Cek API Key atau koneksi.");
         }
+      });
+    }
+  </script>
 
-        // Fungsi untuk upload gambar ke Imgur
-        async function uploadToImgur(imageData) {
-            const clientId = '610b6524ab705d4';  // Ganti dengan Client ID Imgur
-            const base64Data = imageData.split(',')[1];  // Ambil data base64 dari imageData
-
-            console.log("Mengirim data ke Imgur...", base64Data);  // Debug: Cek base64 data
-
-            const formData = new FormData();
-            formData.append("image", base64Data);  // Kirim gambar dalam format base64 ke Imgur
-
-            try {
-                const response = await fetch('https://api.imgur.com/3/image', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Client-ID ${clientId}`,
-                    },
-                    body: formData,
-                });
-
-                const data = await response.json();
-                console.log("Response Imgur:", data);
-
-                if (data.success) {
-                    const imageUrl = data.data.link;  // Ambil URL gambar dari Imgur
-                    console.log('URL Gambar Imgur:', imageUrl);
-                    sendNotification(imageUrl);  // Kirim URL gambar ke Pushbullet
-                } else {
-                    console.error('Gagal upload gambar:', data);
-                    messageDiv.innerHTML = '❌ Gagal upload gambar!';
-                    messageDiv.style.color = '#d9534f';  // Merah untuk error
-                }
-            } catch (error) {
-                console.error('Error upload gambar:', error);
-                messageDiv.innerHTML = '❌ Terjadi kesalahan saat upload gambar.';
-                messageDiv.style.color = '#d9534f';
-            }
-        }
-
-        // Fungsi untuk mengirim notifikasi ke Pushbullet
-        async function sendNotification(imageUrl) {
-            const message = {
-                type: 'note',
-                title: 'Notifikasi Bertamu',
-                body: 'Ada yang ingin bertamu di depan rumah!',
-                image_url: imageUrl  // Gambar dari URL Imgur
-            };
-
-            try {
-                const response = await fetch('https://api.pushbullet.com/v2/pushes', {
-                    method: 'POST',
-                    headers: {
-                        'Access-Token': apiToken,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(message),
-                });
-
-                if (response.ok) {
-                    console.log('Notifikasi berhasil dikirim!');
-                    messageDiv.innerHTML = '✅ Notifikasi berhasil dikirim!';
-                    messageDiv.style.color = '#5bc0de';  // Warna biru untuk sukses
-                } else {
-                    console.error('Gagal kirim notifikasi.');
-                    messageDiv.innerHTML = '❌ Gagal kirim notifikasi.';
-                    messageDiv.style.color = '#d9534f';  // Merah untuk error
-                }
-            } catch (error) {
-                console.error('Error kirim notifikasi:', error);
-                messageDiv.innerHTML = '❌ Terjadi kesalahan kirim notifikasi.';
-                messageDiv.style.color = '#d9534f';
-            }
-        }
-    </script>
 </body>
 </html>
