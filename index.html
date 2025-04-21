@@ -1,13 +1,59 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Bell Notification</title>
-</head>
-<body style="text-align: center; margin-top: 50px;">
+  <title>Bell Tamu</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      background: #f0f0f0;
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
 
-  <button onclick="sendNotification()" style="font-size: 24px; padding: 10px 20px;">
-    Bell
-  </button>
+    .container {
+      text-align: center;
+    }
+
+    button {
+      background-color: #ff4757;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      font-size: 24px;
+      border-radius: 12px;
+      cursor: pointer;
+      box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background-color: #e84118;
+      transform: scale(1.05);
+    }
+
+    .icon {
+      margin-right: 10px;
+    }
+
+    .notif {
+      margin-top: 20px;
+      font-size: 16px;
+      color: #2f3542;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <button onclick="sendNotification()">
+      <span class="icon">🔔</span> Bell Tamu
+    </button>
+    <div id="notifMsg" class="notif"></div>
+  </div>
 
   <script>
     function sendNotification() {
@@ -24,10 +70,11 @@
         })
       })
       .then(response => {
+        const msg = document.getElementById('notifMsg');
         if (response.ok) {
-          alert("Notifikasi berhasil dikirim ke Pushbullet!");
+          msg.innerText = "Notifikasi berhasil dikirim!";
         } else {
-          alert("Gagal kirim notifikasi. Cek API Key atau koneksi.");
+          msg.innerText = "Gagal mengirim notifikasi.";
         }
       });
     }
